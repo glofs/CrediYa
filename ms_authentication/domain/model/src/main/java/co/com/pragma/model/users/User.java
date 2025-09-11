@@ -10,8 +10,9 @@ import java.time.LocalDate;
 @ToString
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class User {
+public class    User {
     private Integer id;
+    private String document;
     private String name;
     private String lastName;
     private String email;

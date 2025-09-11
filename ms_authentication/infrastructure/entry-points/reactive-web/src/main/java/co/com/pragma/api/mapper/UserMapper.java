@@ -1,6 +1,8 @@
 package co.com.pragma.api.mapper;
 
 import co.com.pragma.api.dto.Data;
+import co.com.pragma.api.dto.Document;
+import co.com.pragma.api.dto.UserBoolean;
 import co.com.pragma.api.dto.UserDto;
 import co.com.pragma.model.users.User;
 import org.springframework.stereotype.Component;
@@ -13,6 +15,7 @@ public class UserMapper {
         return User
                 .builder()
                 .id(userDto.getId())
+                .document(userDto.getDocument())
                 .birthDay(userDto.getBirthDay())
                 .name(userDto.getName())
                 .lastName(userDto.getLastName())
@@ -22,10 +25,11 @@ public class UserMapper {
                 .address(userDto.getAddress()).build();
     }
 
-    public Data userToResponse(User user) {
+    public Data<UserDto> userToResponse(User user) {
         UserDto userDto = UserDto
                 .builder()
                 .id(user.getId())
+                .document(user.getDocument())
                 .name(user.getName())
                 .lastName(user.getLastName())
                 .telephone(user.getTelephone())
@@ -36,8 +40,20 @@ public class UserMapper {
                 .build();
 
         return Data
-                .builder()
+                .<UserDto>builder()
                 .data(userDto)
+                .build();
+    }
+
+    public Data<UserBoolean> booleanToResponse(Boolean flag) {
+        UserBoolean userBoolean = UserBoolean
+                .builder()
+                .exist(flag)
+                .build();
+
+        return Data
+                .<UserBoolean>builder()
+                .data(userBoolean)
                 .build();
     }
 }

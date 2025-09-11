@@ -1,5 +1,6 @@
 package co.com.pragma.api;
 
+import co.com.pragma.api.dto.Document;
 import co.com.pragma.api.dto.UserDto;
 import co.com.pragma.api.exception.HandlerValidator;
 import co.com.pragma.api.exception.ResponseMapper;
@@ -52,6 +53,16 @@ public class UserHandler {
                 .map(userMapper::dtoToModel)
                 .flatMap(usersUseCase::save)
                 .map(userMapper::userToResponse)
-                .flatMap(ResponseMapper::transform);//estructura estandar de exitoso y fallido,dto generico
+                .flatMap(ResponseMapper::transform);
+    }
+
+    public Mono<ServerResponse> consultUserByDocument(ServerRequest serverRequest) {
+        return serverRequest
+                .bodyToMono(Document.class)
+                .flatMap(handlerValidator::validate)
+                .map(Document::getDocument)
+                .flatMap(usersUseCase::consultUser)
+                .map(userMapper::booleanToResponse)
+                .flatMap(ResponseMapper::transform);
     }
 }

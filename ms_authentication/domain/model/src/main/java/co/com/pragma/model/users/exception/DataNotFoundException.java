@@ -1,4 +1,4 @@
-package co.com.pragma.r2dbc.helper;
+package co.com.pragma.model.users.exception;
 
 public class DataNotFoundException extends RuntimeException {
     public DataNotFoundException(String message) {

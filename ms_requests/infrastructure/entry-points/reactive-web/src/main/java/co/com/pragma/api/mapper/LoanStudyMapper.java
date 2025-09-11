@@ -4,7 +4,9 @@ import co.com.pragma.api.dto.LoanDto;
 import co.com.pragma.log.Constants;
 import co.com.pragma.model.loan.request.LoanModel;
 import co.com.pragma.model.loan.response.LoanResponse;
+import org.springframework.stereotype.Component;
 
+@Component
 public class LoanStudyMapper {
 
     public  LoanModel LoanDtoToLoanModel(LoanDto loanDto) {

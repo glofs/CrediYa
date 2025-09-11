@@ -20,11 +20,11 @@ public class HandlerValidator {
     private final LoggerBuilder loggerBuilder;
 
 
-    public Mono<UserDto> validate(UserDto objet) {
+    public <T> Mono<T> validate(T objet) {
 
         loggerBuilder.writeInfo(objet, HandlerValidator.class.getName(), VALIDATION_START);
         return Mono.just(objet).flatMap(createUserDTO -> {
-                    Set<ConstraintViolation<UserDto>> violations = validator.validate(objet);
+                    Set<ConstraintViolation<T>> violations = validator.validate(objet);
                     if (!violations.isEmpty()) {
                         return Mono.error(new ConstraintViolationException(violations));
                     }

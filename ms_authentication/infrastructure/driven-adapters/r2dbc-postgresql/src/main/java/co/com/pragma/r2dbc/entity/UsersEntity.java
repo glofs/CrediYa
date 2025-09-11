@@ -20,6 +20,8 @@ public class UsersEntity {
     private Integer id;
     @NotBlank(message = "name field is required")
     private String name;
+    @NotBlank(message = "document field is required")
+    private String document;
     @NotBlank(message = "LastName field is required")
     private String lastName;
     @Email(message = "format email invalid")

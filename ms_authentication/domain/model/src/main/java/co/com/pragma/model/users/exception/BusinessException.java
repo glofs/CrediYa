@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class BusinessException {
+public class BusinessException  {
     private String code;
     private List<String> message;
     private String path;

@@ -14,4 +14,5 @@ public class LoanModel {
     private Long amount;
     private String term;
     private String type;
+    private String idState;
 }

@@ -20,5 +20,5 @@ public class LoanEntity {
     private String term;
     private String type;
     @Value(value = "id_state")
-    private Integer idState;
+    private String idState;
 }

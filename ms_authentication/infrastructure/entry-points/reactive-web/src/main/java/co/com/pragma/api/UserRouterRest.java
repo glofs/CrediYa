@@ -22,6 +22,7 @@ public class UserRouterRest {
     })
 
     public RouterFunction<ServerResponse> routerFunction(UserHandler myUserHandler) {
-        return route(POST("/api/v1/users/createUser"), myUserHandler::createUsers);
+        return route(POST("/api/v1/users/createUser"), myUserHandler::createUsers)
+                .andRoute(POST("/api/v1/user/consult"), myUserHandler::consultUserByDocument);
     }
 }

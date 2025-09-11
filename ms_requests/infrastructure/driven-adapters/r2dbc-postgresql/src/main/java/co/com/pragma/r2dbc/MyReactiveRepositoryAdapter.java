@@ -13,8 +13,7 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigInteger;
 
-import static co.com.pragma.model.loan.exception.Constants.DATA_IS_BLANK;
-import static co.com.pragma.model.loan.exception.Constants.INVALID_TYPE_LOAN;
+import static co.com.pragma.model.loan.exception.Constants.*;
 
 @Repository
 public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<LoanModel, LoanEntity, BigInteger, MyReactiveRepository> implements SaveLoanRepository {
@@ -28,6 +27,7 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<LoanM
     }
 
     public Mono<LoanModel> saveLoan(LoanModel loanModel) {
+        loanModel.setIdState(PENDING_OF_REVIEW);
         return findByType(loanModel)
                 .as(transactionalOperator::transactional)
                 .flatMap(loan -> repository.save(toData(loanModel))

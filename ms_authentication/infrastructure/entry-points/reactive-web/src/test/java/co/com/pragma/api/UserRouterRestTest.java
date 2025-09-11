@@ -1,6 +1,8 @@
 package co.com.pragma.api;
 
 import co.com.pragma.api.dto.Data;
+import co.com.pragma.api.dto.Document;
+import co.com.pragma.api.dto.UserBoolean;
 import co.com.pragma.api.dto.UserDto;
 import co.com.pragma.api.exception.HandlerValidator;
 import co.com.pragma.api.mapper.UserMapper;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -19,6 +22,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -39,7 +43,10 @@ class UserRouterRestTest {
 
     private User user;
     private UserDto userDto;
-    private Data data;
+    private Data<UserDto> data;
+    private Data<UserBoolean> data1;
+    private UserBoolean userBoolean;
+    private Document document;
 
     @BeforeEach
     void setup() {
@@ -68,17 +75,32 @@ class UserRouterRestTest {
                 .pay(4000000)
                 .build();
 
-        data = Data
+        userBoolean = UserBoolean
                 .builder()
+                .exist(true)
+                .build();
+
+        data = Data
+                .<UserDto>builder()
                 .data(userDto)
                 .build();
+
+        data1 = Data.
+                <UserBoolean>builder()
+                .data(userBoolean)
+                .build();
+
+        document = Document
+                .builder()
+                .document("1066515628")
+                .build();
+
     }
 
 
     @Test
     void createUser() {
 
-        // Given
         UserDto userRequest1 = new UserDto();
         userRequest1.setName("Gustavo");
         userRequest1.setLastName("Lozada");
@@ -89,6 +111,7 @@ class UserRouterRestTest {
         userRequest1.setPay(4000000);
 
         when(validators.validate(any(UserDto.class))).thenReturn(Mono.just(userRequest1));
+        //no usar any
         when(userMapper.dtoToModel(userRequest1)).thenReturn(user);
         when(usersUseCase.save(user)).thenReturn(Mono.just(user));
         when(userMapper.userToResponse(user)).thenReturn(data);
@@ -103,6 +126,27 @@ class UserRouterRestTest {
     }
 
     @Test
+    public void consultUser() {
+
+
+        when(validators.validate(any(Document.class))).thenReturn(Mono.just(document));
+        when(usersUseCase.consultUser(document.getDocument())).thenReturn(Mono.just(true));
+        when(userMapper.booleanToResponse(true)).thenReturn(data1);
+
+
+        webTestClient.post()
+                .uri("/api/v1/user/consult")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(document)
+                .exchange()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("$.data.exist").isEqualTo(true);
+    }
+
+
+    @Test
     void createUserException() {
 
         UserDto userRequest1 = new UserDto();
@@ -113,17 +157,19 @@ class UserRouterRestTest {
         userRequest1.setTelephone("3001234567");
         userRequest1.setEmail("john.doe@test.com");
         userRequest1.setPay(4000000);
-
+        //borra any
         when(validators.validate(any(UserDto.class))).thenReturn(Mono.just(userRequest1));
         when(userMapper.dtoToModel(userRequest1)).thenReturn(user);
         when(usersUseCase.save(user)).thenReturn(Mono.error(new RuntimeException("Email user already registered")));
-
+        //cambiar excception
         webTestClient.post()
                 .uri("/api/v1/users/createUse")
                 .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus()
                 .is4xxClientError();
+        //match el error concreto
     }
 
 }

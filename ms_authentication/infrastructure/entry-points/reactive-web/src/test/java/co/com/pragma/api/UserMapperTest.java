@@ -29,7 +29,7 @@ class UserMapperTest {
 
         // Act
         User model = userMapper.dtoToModel(dto);
-        Data data = userMapper.userToResponse(model);
+        Data<UserDto> data = userMapper.userToResponse(model);
 
         // Assert
         assertEquals(dto.getId(), model.getId());

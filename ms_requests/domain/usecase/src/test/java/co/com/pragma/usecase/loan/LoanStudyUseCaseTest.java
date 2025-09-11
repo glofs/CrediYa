@@ -15,6 +15,7 @@ import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 public class LoanStudyUseCaseTest {
@@ -49,7 +50,7 @@ public class LoanStudyUseCaseTest {
 
         informationUser = InformationUser
                 .builder()
-                .document(loanModel.getDocument())
+                .document("123456")
                 .build();
 
         userResponse = UserResponse.
@@ -87,14 +88,13 @@ public class LoanStudyUseCaseTest {
 
     }
 
-  /*  @Test
+    @Test
     void saveLoanExceptionEmpty() {
-        when(consultInformationRepository.consultInformationUser(informationUser).thenReturn(Mono.empty()));
+
+        when(consultInformationRepository.consultInformationUser(any(InformationUser.class))).thenReturn(Mono.empty());
+        when(saveLoanRepository.saveLoan(loanModel)).thenReturn(Mono.just(loanModel));
         StepVerifier.create(loanStudyUseCase.generateLoan(loanModel))
-                .expectErrorMatches(e -> e instanceof DataNotFoundException && e.getMessage().equals(CONSULT_USER_IS_EMPTY))
+                .expectErrorMatches(e -> e instanceof DataNotFoundException && e.getMessage().equals("consult user is empty"))
                 .verify();
-
-    }*/
-
-
+    }
 }

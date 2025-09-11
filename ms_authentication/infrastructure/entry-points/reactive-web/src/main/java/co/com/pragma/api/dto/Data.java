@@ -8,6 +8,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class Data {
-    private UserDto data;
+public class Data<T> {
+    private T data;
 }

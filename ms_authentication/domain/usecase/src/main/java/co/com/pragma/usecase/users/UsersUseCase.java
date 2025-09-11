@@ -15,4 +15,8 @@ public class UsersUseCase {
     public Mono<User> save(User user) {
         return usersRepository.save(user);
     }
+
+    public Mono<Boolean> consultUser(String document) {
+        return this.usersRepository.existByDocument(document);
+    }
 }

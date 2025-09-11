@@ -31,6 +31,6 @@ public class RestConsumer implements ConsultInformationRepository {
                                         Mono.error(new DataNotFoundException(USER_NOT_FOUND)))
                         .bodyToMono(Data.class)
                         .doOnNext(System.out::println)
-                );
+                        .onErrorResume(e -> Mono.error(new DataNotFoundException("authentication microservice dont up"))));
     }
 }

@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: 8080
 spring:
   application:
     name: "ms_authentication"
@@ -23,7 +23,8 @@ management:
         enabled: true
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
-
+jwt:
+  key: "c7bc40a8ff9288da6ca4934bafde214f4d1f234f731f82e22a0e2bd135db8102"
 logging:
   level:
     org:

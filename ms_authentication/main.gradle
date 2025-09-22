@@ -86,7 +86,8 @@ subprojects {
                         '**/Config*.class',
                         '**/configuration/**',
                         '**/MainApplication.class',
-                        '**/exception/Global*.class'
+                        '**/exception/Global*.class',
+                        '**/jwt/**'
                 ])
             }))
         }
@@ -117,7 +118,8 @@ tasks.register('jacocoMergedReport', JacocoReport) {
                 '**/Config*.class',
                 '**/configuration/**',
                 '**/MainApplication.class',
-                '**/exception/Global*.class'
+                '**/exception/Global*.class',
+                '**/jwt/**'
         ])
     }))
 

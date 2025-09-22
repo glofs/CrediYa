@@ -1,4 +1,4 @@
-package co.com.pragma.model.users;
+package co.com.pragma.api.dto;
 
 import lombok.*;
 
@@ -6,21 +6,18 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @ToString
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class User {
+public class UserResponse {
     private Integer id;
-    private String document;
     private String name;
+    private String document;
     private String lastName;
-    private String email;
     private LocalDate birthDay;
-    private Integer pay;
-    private String telephone;
     private String address;
-    private String role;
-    private String password;
-
+    private String telephone;
+    private String email;
+    private Integer pay;
 }

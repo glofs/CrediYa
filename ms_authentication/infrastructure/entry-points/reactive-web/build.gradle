@@ -4,8 +4,13 @@ dependencies {
     implementation project(':log')
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
     implementation 'io.micrometer:micrometer-registry-prometheus'
     implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.11'
     implementation "io.swagger.core.v3:swagger-annotations:2.2.35"
     implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.0'
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.0'
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.0'
 }

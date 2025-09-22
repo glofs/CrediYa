@@ -21,7 +21,6 @@ public class HandlerValidator {
 
 
     public <T> Mono<T> validate(T objet) {
-
         loggerBuilder.writeInfo(objet, HandlerValidator.class.getName(), VALIDATION_START);
         return Mono.just(objet).flatMap(createUserDTO -> {
                     Set<ConstraintViolation<T>> violations = validator.validate(objet);

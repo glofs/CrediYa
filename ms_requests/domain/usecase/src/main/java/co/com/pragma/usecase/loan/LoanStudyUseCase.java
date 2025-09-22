@@ -5,6 +5,7 @@ import co.com.pragma.model.loan.gateways.ConsultInformationRepository;
 import co.com.pragma.model.loan.gateways.SaveLoanRepository;
 import co.com.pragma.model.loan.request.InformationUser;
 import co.com.pragma.model.loan.request.LoanModel;
+import co.com.pragma.model.loan.response.Data;
 import reactor.core.publisher.Mono;
 
 import java.util.logging.Logger;
@@ -22,7 +23,7 @@ public class LoanStudyUseCase {
         this.saveLoanRepository = saveLoanRepository;
     }
 
-    public Mono<LoanModel> generateLoan(LoanModel loanModel) {
+    public Mono<?> generateLoan(LoanModel loanModel, String authorization) {
 
         InformationUser
                 informationUser = InformationUser
@@ -30,7 +31,7 @@ public class LoanStudyUseCase {
                 .document(loanModel.getDocument())
                 .build();
 
-        return consultUserRepository.consultInformationUser(informationUser)
+        return consultUserRepository.consultInformationUser(informationUser, authorization)
                 .switchIfEmpty(Mono.error(new DataNotFoundException(CONSULT_USER_IS_EMPTY)))
                 .doOnSuccess(userResponse -> System.out.println("user information " + userResponse))
                 .flatMap(loanMod -> saveLoanRepository.saveLoan(loanModel));

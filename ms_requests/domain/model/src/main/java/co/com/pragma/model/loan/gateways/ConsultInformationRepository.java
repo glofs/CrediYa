@@ -6,5 +6,5 @@ import reactor.core.publisher.Mono;
 
 public interface ConsultInformationRepository {
 
-    Mono<Data> consultInformationUser(InformationUser infoUser);
+    Mono<Data> consultInformationUser(InformationUser infoUser,String authorization);
 }

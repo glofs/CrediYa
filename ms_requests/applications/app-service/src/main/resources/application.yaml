@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8083
 spring:
   application:
     name: "ms_requests"
@@ -17,7 +17,7 @@ spring:
 adapter:
   restconsumer:
     timeout: 5000
-    host: "http://localhost:8082"
+    host: "http://localhost:8080"
     path: "/api/v1/user/consult"
 management:
   health:

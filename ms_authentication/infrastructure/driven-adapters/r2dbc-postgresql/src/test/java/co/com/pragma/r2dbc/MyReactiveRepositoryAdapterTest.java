@@ -1,5 +1,6 @@
 package co.com.pragma.r2dbc;
 
+import co.com.pragma.model.users.Login;
 import co.com.pragma.model.users.User;
 import co.com.pragma.r2dbc.entity.UsersEntity;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,12 +11,16 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivecommons.utils.ObjectMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.beans.Encoder;
 import java.time.LocalDate;
+import java.util.Base64;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -38,11 +43,15 @@ class MyReactiveRepositoryAdapterTest {
     @Mock
     private TransactionalOperator transactionalOperator;
 
+    @Mock
+    PasswordEncoder passwordEncoder;
+
 
     private User user;
     private UsersEntity users2;
     private UsersEntity usersEntity;
     private Flux<User> usersFlux;
+    private Login login;
 
     @BeforeEach
     void setup() {
@@ -57,6 +66,12 @@ class MyReactiveRepositoryAdapterTest {
                 .telephone("3001234567")
                 .email("john.doe@test.com")
                 .pay(4000000)
+                .password("1234")
+                .build();
+        login = Login
+                .builder()
+                .password(user.getPassword())
+                .email(user.getEmail())
                 .build();
 
         users2 = UsersEntity.builder()
@@ -68,20 +83,50 @@ class MyReactiveRepositoryAdapterTest {
                 .telephone("3001234567")
                 .email("john.doe@test.com")
                 .pay(4000000)
+                .password("1234")
                 .build();
+
     }
 
     @Test
     void createUsers() {
         when(repository.existsByEmail(user.getEmail())).thenReturn(Mono.just(false));
         when(mapper.map(any(User.class), eq(UsersEntity.class))).thenReturn(users2);
+        when(passwordEncoder.encode(user.getPassword())).thenReturn("1234");
         when(repository.save(users2)).thenReturn(Mono.just(users2));
         when(mapper.map(any(UsersEntity.class), eq(User.class))).thenReturn(user);
         when(transactionalOperator.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        MyReactiveRepositoryAdapter adapter = new MyReactiveRepositoryAdapter(repository, mapper, transactionalOperator);
+        MyReactiveRepositoryAdapter adapter = new MyReactiveRepositoryAdapter(repository, mapper, transactionalOperator, passwordEncoder);
         adapter.save(user).as(StepVerifier::create)
                 .expectNext(user)
                 .verifyComplete();
+    }
+
+    @Test
+    void loginUser() {
+        when(repository.findByEmail(user.getEmail())).thenReturn(Mono.just(users2));
+        when(transactionalOperator.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(mapper.map(any(UsersEntity.class), eq(User.class))).thenReturn(user);
+        when(passwordEncoder.matches(login.getPassword(), user.getPassword())).thenReturn(true);//como esta mockeado, al enviar 2 string iguales hace match
+        MyReactiveRepositoryAdapter adapter = new MyReactiveRepositoryAdapter(repository, mapper, transactionalOperator, passwordEncoder);
+        adapter.loginUser(login)
+                .as(StepVerifier::create)
+                .expectNext(user)
+                .verifyComplete();
+
+    }
+
+    @Test
+    void existByDocument() {
+        when(repository.existsByDocument(user.getDocument())).thenReturn(Mono.just(true));
+        when(transactionalOperator.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        MyReactiveRepositoryAdapter adapter = new MyReactiveRepositoryAdapter(repository, mapper, transactionalOperator, passwordEncoder);
+        adapter.existByDocument(user.getDocument())
+                .as(StepVerifier::create)
+                .expectNext(true)
+                .verifyComplete();
+
+
     }
 
 
@@ -91,7 +136,7 @@ class MyReactiveRepositoryAdapterTest {
         when(repository.existsByEmail(user.getEmail())).thenReturn(Mono.just(true));
         //when(mapper.map(any(Users.class), eq(UsersEntity.class))).thenReturn(users2);
         when(transactionalOperator.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        MyReactiveRepositoryAdapter adapter = new MyReactiveRepositoryAdapter(repository, mapper, transactionalOperator);
+        MyReactiveRepositoryAdapter adapter = new MyReactiveRepositoryAdapter(repository, mapper, transactionalOperator, passwordEncoder);
         adapter.save(user).as(StepVerifier::create)
                 .expectError(IllegalAccessError.class);
     }
@@ -102,7 +147,7 @@ class MyReactiveRepositoryAdapterTest {
         List<UsersEntity> usersList = List.of(users2);
         Flux<UsersEntity> flux = Flux.fromIterable(usersList);
         when(repository.findAll()).thenReturn(flux);
-        MyReactiveRepositoryAdapter adapter = new MyReactiveRepositoryAdapter(repository, mapper, transactionalOperator);
+        MyReactiveRepositoryAdapter adapter = new MyReactiveRepositoryAdapter(repository, mapper, transactionalOperator, passwordEncoder);
         when(mapper.map(any(UsersEntity.class), eq(User.class))).thenReturn(user);
 
 
@@ -116,7 +161,7 @@ class MyReactiveRepositoryAdapterTest {
     void shouldCheckEmailNotExists() {
         when(repository.existsByEmail(user.getEmail())).thenReturn(Mono.just(false));
         when(transactionalOperator.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        MyReactiveRepositoryAdapter adapter = new MyReactiveRepositoryAdapter(repository, mapper, transactionalOperator);
+        MyReactiveRepositoryAdapter adapter = new MyReactiveRepositoryAdapter(repository, mapper, transactionalOperator, passwordEncoder);
         adapter.existsByEmail("john.doe@test.com")
                 .as(StepVerifier::create)
                 .expectNext(true)
@@ -128,7 +173,7 @@ class MyReactiveRepositoryAdapterTest {
     void shouldCheckEmailExists() {
         when(repository.existsByEmail(user.getEmail())).thenReturn(Mono.just(true));
         when(transactionalOperator.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        MyReactiveRepositoryAdapter adapter = new MyReactiveRepositoryAdapter(repository, mapper, transactionalOperator);
+        MyReactiveRepositoryAdapter adapter = new MyReactiveRepositoryAdapter(repository, mapper, transactionalOperator, passwordEncoder);
         adapter.existsByEmail("john.doe@test.com")
                 .as(StepVerifier::create)
                 .expectNext(false)

@@ -12,5 +12,5 @@ import java.math.BigInteger;
 public interface MyReactiveRepository extends ReactiveCrudRepository<UsersEntity, BigInteger>, ReactiveQueryByExampleExecutor<UsersEntity> {
     Mono<Boolean> existsByEmail(String email);
     Mono<Boolean> existsByDocument(String document);
-    Mono<User> save(User user);
+    Mono<UsersEntity> findByEmail(String email);
 }

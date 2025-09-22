@@ -1,9 +1,6 @@
 package co.com.pragma.api.mapper;
 
-import co.com.pragma.api.dto.Data;
-import co.com.pragma.api.dto.Document;
-import co.com.pragma.api.dto.UserBoolean;
-import co.com.pragma.api.dto.UserDto;
+import co.com.pragma.api.dto.*;
 import co.com.pragma.model.users.User;
 import org.springframework.stereotype.Component;
 
@@ -22,11 +19,12 @@ public class UserMapper {
                 .email(userDto.getEmail())
                 .pay(userDto.getPay())
                 .telephone(userDto.getTelephone())
-                .address(userDto.getAddress()).build();
+                .address(userDto.getAddress())
+                .password(userDto.getPassword()).build();
     }
 
-    public Data<UserDto> userToResponse(User user) {
-        UserDto userDto = UserDto
+    public Data<UserResponse> userToResponse(User user) {
+        UserResponse userResponse = UserResponse
                 .builder()
                 .id(user.getId())
                 .document(user.getDocument())
@@ -40,8 +38,8 @@ public class UserMapper {
                 .build();
 
         return Data
-                .<UserDto>builder()
-                .data(userDto)
+                .<UserResponse>builder()
+                .data(userResponse)
                 .build();
     }
 

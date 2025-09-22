@@ -1,19 +1,23 @@
 package co.com.pragma.api;
 
-import co.com.pragma.api.dto.Data;
-import co.com.pragma.api.dto.Document;
-import co.com.pragma.api.dto.UserBoolean;
-import co.com.pragma.api.dto.UserDto;
+import co.com.pragma.api.config.SecurityTestConfig;
+import co.com.pragma.api.dto.*;
 import co.com.pragma.api.exception.HandlerValidator;
+import co.com.pragma.api.jwt.GetAuthority;
+import co.com.pragma.api.jwt.JwtService;
+import co.com.pragma.api.mapper.LoginMapper;
 import co.com.pragma.api.mapper.UserMapper;
+import co.com.pragma.model.users.Login;
 import co.com.pragma.model.users.User;
+import co.com.pragma.usecase.users.LoginUserUseCase;
 import co.com.pragma.usecase.users.UsersUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -22,10 +26,10 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+@Import(SecurityTestConfig.class)
 @ContextConfiguration(classes = {UserRouterRest.class, UserHandler.class})
 @WebFluxTest
 class UserRouterRestTest {
@@ -36,17 +40,32 @@ class UserRouterRestTest {
     private UsersUseCase usersUseCase;
 
     @MockitoBean
+    private LoginUserUseCase loginUserUseCase;
+
+    @MockitoBean
     private UserMapper userMapper;
+    @MockitoBean
+    private LoginMapper loginMapper;
 
     @MockitoBean
     private HandlerValidator validators;
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private GetAuthority getAuthority;
 
     private User user;
-    private UserDto userDto;
-    private Data<UserDto> data;
+    private UserResponse userResponse;
+    private Data<UserResponse> data;
     private Data<UserBoolean> data1;
+    private Data<LoginResponse> data2;
     private UserBoolean userBoolean;
     private Document document;
+    private LoginDto login;
+    private Login login1;
+    private LoginResponse loginResponse;
+
 
     @BeforeEach
     void setup() {
@@ -61,10 +80,12 @@ class UserRouterRestTest {
                 .telephone("3001234567")
                 .email("john.doe@test.com")
                 .pay(4000000)
+                .role("USER")
+                .password("1234")
                 .build();
 
 
-        userDto = UserDto.builder()
+        userResponse = UserResponse.builder()
                 .id(1)
                 .name("Gustavo")
                 .lastName("Lozada")
@@ -75,19 +96,40 @@ class UserRouterRestTest {
                 .pay(4000000)
                 .build();
 
+        login = LoginDto
+                .builder()
+                .email("john.doe@test.com")
+                .password("1234")
+                .build();
+        login1 = Login
+                .builder()
+                .email("john.doe@test.com")
+                .password("1234")
+                .build();
+
         userBoolean = UserBoolean
                 .builder()
                 .exist(true)
                 .build();
 
         data = Data
-                .<UserDto>builder()
-                .data(userDto)
+                .<UserResponse>builder()
+                .data(userResponse)
                 .build();
 
         data1 = Data.
                 <UserBoolean>builder()
                 .data(userBoolean)
+                .build();
+
+        loginResponse = LoginResponse
+                .builder()
+                .token("1234")
+                .build();
+
+        data2 = Data
+                .<LoginResponse>builder()
+                .data(loginResponse)
                 .build();
 
         document = Document
@@ -109,19 +151,21 @@ class UserRouterRestTest {
         userRequest1.setTelephone("3001234567");
         userRequest1.setEmail("john.doe@test.com");
         userRequest1.setPay(4000000);
-
         when(validators.validate(any(UserDto.class))).thenReturn(Mono.just(userRequest1));
         //no usar any
         when(userMapper.dtoToModel(userRequest1)).thenReturn(user);
+        when(getAuthority.roles("ADMIN")).thenReturn(Mono.just("ADMIN"));
         when(usersUseCase.save(user)).thenReturn(Mono.just(user));
         when(userMapper.userToResponse(user)).thenReturn(data);
 
         webTestClient.post()
                 .uri("/api/v1/users/createUser")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer 1234")
                 .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(userRequest1)
                 .exchange()
                 .expectBody()
+                .consumeWith(System.out::println)
                 .jsonPath("$.data.name").isEqualTo("Gustavo");
     }
 
@@ -130,6 +174,7 @@ class UserRouterRestTest {
 
 
         when(validators.validate(any(Document.class))).thenReturn(Mono.just(document));
+        when(getAuthority.roles("USER")).thenReturn(Mono.just("USER"));
         when(usersUseCase.consultUser(document.getDocument())).thenReturn(Mono.just(true));
         when(userMapper.booleanToResponse(true)).thenReturn(data1);
 
@@ -137,12 +182,34 @@ class UserRouterRestTest {
         webTestClient.post()
                 .uri("/api/v1/user/consult")
                 .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer 1234")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(document)
                 .exchange()
                 .expectBody()
                 .consumeWith(System.out::println)
                 .jsonPath("$.data.exist").isEqualTo(true);
+    }
+
+    @Test
+    void login_user() {
+        when(validators.validate(any(LoginDto.class))).thenReturn(Mono.just(login));//serialize change instance in bodyvalue de webtest
+        when(loginMapper.loginDtoToLogin(login)).thenReturn(login1);
+        when(loginUserUseCase.loginUser(login1)).thenReturn(Mono.just(user));
+        when(jwtService.generateToken(user)).thenReturn(Mono.just("1234"));
+        when(loginMapper.token("1234")).thenReturn(data2);
+
+        webTestClient.post()
+                .uri("/api/v1/login")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(login)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("$.data.token").isEqualTo("1234");
+
     }
 
 
@@ -165,6 +232,7 @@ class UserRouterRestTest {
         webTestClient.post()
                 .uri("/api/v1/users/createUse")
                 .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer 1234")
                 .contentType(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus()

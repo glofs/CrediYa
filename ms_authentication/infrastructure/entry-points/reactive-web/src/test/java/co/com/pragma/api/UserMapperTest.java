@@ -2,6 +2,7 @@ package co.com.pragma.api;
 
 import co.com.pragma.api.dto.Data;
 import co.com.pragma.api.dto.UserDto;
+import co.com.pragma.api.dto.UserResponse;
 import co.com.pragma.api.mapper.UserMapper;
 import co.com.pragma.model.users.User;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,7 @@ class UserMapperTest {
 
         // Act
         User model = userMapper.dtoToModel(dto);
-        Data<UserDto> data = userMapper.userToResponse(model);
+        Data<UserResponse> data = userMapper.userToResponse(model);
 
         // Assert
         assertEquals(dto.getId(), model.getId());

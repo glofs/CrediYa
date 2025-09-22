@@ -22,4 +22,6 @@ public class SecurityHeadersConfig implements WebFilter {
         headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
         return chain.filter(exchange);
     }
+
+
 }

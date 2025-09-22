@@ -1,6 +1,7 @@
 package co.com.pragma.usecase.users;
 
 import co.com.pragma.model.users.User;
+import co.com.pragma.model.users.exception.DataNotFoundException;
 import co.com.pragma.model.users.gateways.UsersRepository;
 import reactor.core.publisher.Mono;
 

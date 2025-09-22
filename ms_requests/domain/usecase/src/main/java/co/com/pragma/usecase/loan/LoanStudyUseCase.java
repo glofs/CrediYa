@@ -23,7 +23,7 @@ public class LoanStudyUseCase {
         this.saveLoanRepository = saveLoanRepository;
     }
 
-    public Mono<?> generateLoan(LoanModel loanModel, String authorization) {
+    public Mono<LoanModel> generateLoan(LoanModel loanModel, String authorization) {
 
         InformationUser
                 informationUser = InformationUser

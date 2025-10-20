@@ -126,7 +126,6 @@ class MyReactiveRepositoryAdapterTest {
                 .expectNext(true)
                 .verifyComplete();
 
-
     }
 
 
@@ -179,18 +178,18 @@ class MyReactiveRepositoryAdapterTest {
                 .expectNext(false)
                 .verifyComplete();
     }
-       /*
+
     @Test
-    void mustFindByExample() {
-        when(repository.findAll(any(Example.class))).thenReturn(Flux.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
-
-        Flux<Object> result = repositoryAdapter.findByExample("test");
-
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
+    void mustFindByDocument() {
+        when(repository.findByDocument(user.getDocument())).thenReturn(Mono.just(users2));
+        when(transactionalOperator.transactional(any(Mono.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(mapper.map(any(UsersEntity.class), eq(User.class))).thenReturn(user);        MyReactiveRepositoryAdapter adapter = new MyReactiveRepositoryAdapter(repository, mapper, transactionalOperator, passwordEncoder);
+        adapter.findByDocument(user.getDocument())
+                .as(StepVerifier::create)
+                .expectNext(user)
                 .verifyComplete();
     }
+     /*
 
     @Test
     void mustSaveValue() {

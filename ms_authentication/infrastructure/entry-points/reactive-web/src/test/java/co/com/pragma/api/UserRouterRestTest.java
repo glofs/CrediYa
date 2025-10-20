@@ -58,13 +58,15 @@ class UserRouterRestTest {
     private User user;
     private UserResponse userResponse;
     private Data<UserResponse> data;
-    private Data<UserBoolean> data1;
+    private Data<UserRole> data1;
     private Data<LoginResponse> data2;
-    private UserBoolean userBoolean;
+    private UserRole userRole;
     private Document document;
     private LoginDto login;
     private Login login1;
     private LoginResponse loginResponse;
+    private BasicInformation basicInformation;
+    private Data<BasicInformation> dataB;
 
 
     @BeforeEach
@@ -82,6 +84,12 @@ class UserRouterRestTest {
                 .pay(4000000)
                 .role("USER")
                 .password("1234")
+                .build();
+
+        basicInformation = BasicInformation
+                .builder()
+                .name("Gustavo")
+                .email("john.doe@test.com")
                 .build();
 
 
@@ -107,20 +115,25 @@ class UserRouterRestTest {
                 .password("1234")
                 .build();
 
-        userBoolean = UserBoolean
+        userRole = UserRole
                 .builder()
-                .exist(true)
+                .role("USER")
                 .build();
 
         data = Data
                 .<UserResponse>builder()
                 .data(userResponse)
                 .build();
+        dataB = Data
+                .<BasicInformation>builder()
+                .data(basicInformation)
+                .build();
 
         data1 = Data.
-                <UserBoolean>builder()
-                .data(userBoolean)
+                <UserRole>builder()
+                .data(userRole)
                 .build();
+
 
         loginResponse = LoginResponse
                 .builder()
@@ -172,23 +185,22 @@ class UserRouterRestTest {
     @Test
     public void consultUser() {
 
-
         when(validators.validate(any(Document.class))).thenReturn(Mono.just(document));
         when(getAuthority.roles("USER")).thenReturn(Mono.just("USER"));
-        when(usersUseCase.consultUser(document.getDocument())).thenReturn(Mono.just(true));
-        when(userMapper.booleanToResponse(true)).thenReturn(data1);
-
+        when(usersUseCase.consultUser(document.getDocument())).thenReturn(Mono.just(user));
+        when(userMapper.userToBasic(user)).thenReturn(dataB);
 
         webTestClient.post()
                 .uri("/api/v1/user/consult")
                 .accept(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer 1234")
+                .header(HttpHeaders.EXPECT,"USER")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(document)
                 .exchange()
                 .expectBody()
                 .consumeWith(System.out::println)
-                .jsonPath("$.data.exist").isEqualTo(true);
+                .jsonPath("$.data.email").isEqualTo(user.getEmail());
     }
 
     @Test
@@ -211,6 +223,7 @@ class UserRouterRestTest {
                 .jsonPath("$.data.token").isEqualTo("1234");
 
     }
+
 
 
     @Test

@@ -1,6 +1,6 @@
 package co.com.pragma.api.jwt;
 
-import co.com.pragma.model.users.exception.DataNotFoundException;
+import co.com.pragma.model.users.exception.DynamicBusinessException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -21,7 +21,6 @@ public class GetAuthority {
                             .orElse("NOT_AUTHORITY");
                 })
                 .filter(rol -> rol.equals(role))
-                .switchIfEmpty(Mono.error(new DataNotFoundException(role +" AUTHORITY IS REQUIRED")))
-                .doOnError(e -> Mono.error(new DataNotFoundException(e.getMessage())));
+                .switchIfEmpty(Mono.error(new DynamicBusinessException(role + " AUTHORITY IS REQUIRED", 403)));
     }
 }

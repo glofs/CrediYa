@@ -1,6 +1,6 @@
 package co.com.pragma.api.config;
 
-import co.com.pragma.model.users.exception.DataNotFoundException;
+import co.com.pragma.model.users.exception.DynamicBusinessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -17,14 +17,15 @@ public class JwtFilter implements WebFilter {
         ServerHttpRequest request = exchange.getRequest();
 
         String path = request.getPath().value();
-        if (path.contains("login")|| path.contains("swagger-ui")||path.contains("/v3/api-docs"))
+        if (path.contains("login") || path.contains("swagger-ui") || path.contains("/v3/api-docs"))
             return chain.filter(exchange);
         String auth = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (auth == null){
-            System.out.println("headers "+request.getHeaders());
-            return Mono.error(new DataNotFoundException("no token was found"));}
+        if (auth == null) {
+            System.out.println("headers " + request.getHeaders());
+            return Mono.error(new DynamicBusinessException("no token was found", 404));
+        }
         if (!auth.startsWith("Bearer "))
-            return Mono.error(new DataNotFoundException("invalid auth"));
+            return Mono.error(new DynamicBusinessException("invalid auth",500));
         String token = auth.replace("Bearer ", "");
         exchange.getAttributes().put("token", token);
         return chain.filter(exchange);

@@ -43,15 +43,16 @@ public class UserMapper {
                 .build();
     }
 
-    public Data<UserBoolean> booleanToResponse(Boolean flag) {
-        UserBoolean userBoolean = UserBoolean
+    public Data<BasicInformation> userToBasic(User user) {
+        BasicInformation basicInformation = BasicInformation
                 .builder()
-                .exist(flag)
+                .name(user.getName())
+                .email(user.getEmail())
                 .build();
 
         return Data
-                .<UserBoolean>builder()
-                .data(userBoolean)
+                .<BasicInformation>builder()
+                .data(basicInformation)
                 .build();
     }
 }

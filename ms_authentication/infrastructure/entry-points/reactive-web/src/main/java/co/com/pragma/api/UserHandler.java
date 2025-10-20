@@ -9,10 +9,9 @@ import co.com.pragma.api.exception.HandlerValidator;
 import co.com.pragma.api.exception.ResponseMapper;
 import co.com.pragma.api.mapper.LoginMapper;
 import co.com.pragma.api.mapper.UserMapper;
-import co.com.pragma.model.users.exception.DataNotFoundException;
+import co.com.pragma.model.users.exception.DynamicBusinessException;
 import co.com.pragma.usecase.users.LoginUserUseCase;
 import co.com.pragma.usecase.users.UsersUseCase;
-import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,13 +20,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import org.yaml.snakeyaml.util.Tuple;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
@@ -77,15 +72,16 @@ public class UserHandler {
     }
 
     public Mono<ServerResponse> consultUserByDocument(ServerRequest serverRequest) {
+        String spectedRole = serverRequest.headers().firstHeader(HttpHeaders.EXPECT);
         return serverRequest
                 .bodyToMono(Document.class)
                 .flatMap(handlerValidator::validate)
                 .map(Document::getDocument)
                 .flatMap(document ->
-                        authority.roles("USER")
+                        authority.roles(spectedRole)
                                 .map(role -> Tuples.of(document, role)))
                 .flatMap(tuples -> usersUseCase.consultUser(tuples.getT1()))
-                .map(userMapper::booleanToResponse)
+                .map(userMapper::userToBasic)
                 .flatMap(ResponseMapper::transform);
     }
 
@@ -96,6 +92,7 @@ public class UserHandler {
                 .flatMap(loginUserUseCase::loginUser)
                 .flatMap(jwtService::generateToken)
                 .map(loginMapper::token)
+                .doOnError(e -> Mono.error(new DynamicBusinessException(e.getMessage(), 500)))
                 .flatMap(ok -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(ok));

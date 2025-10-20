@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,8 @@ public class JwtService {
     @Value("${jwt.key}")
     private String SECRET_KEY;
 
+
+
     public Mono<String> generateToken(User user) {
         Map<String, Object> mapRole = new HashMap<>();
         mapRole.put("role", List.of(new SimpleGrantedAuthority(user.getRole())));
@@ -38,7 +41,7 @@ public class JwtService {
     }
 
     private Key getSignKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(this.SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);//algorithm
     }
 

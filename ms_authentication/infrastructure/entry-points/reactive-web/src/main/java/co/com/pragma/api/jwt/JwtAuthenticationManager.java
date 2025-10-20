@@ -1,6 +1,6 @@
 package co.com.pragma.api.jwt;
 
-import co.com.pragma.model.users.exception.DataNotFoundException;
+import co.com.pragma.model.users.exception.DynamicBusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,12 +19,14 @@ public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
     private final JwtService jwtService;
 
     @Override
+    @SuppressWarnings("unchecked")
     public Mono<Authentication> authenticate(Authentication authentication) {
         return Mono.just(authentication)
                 .flatMap(auth -> jwtService.extractAllClaims(auth.getCredentials().toString()))
                 .log()
-                .onErrorResume(e -> Mono.error(new DataNotFoundException("Invalid token has been sent")))
-                .map(claims -> new UsernamePasswordAuthenticationToken(
+                .onErrorResume(e -> Mono.error(new DynamicBusinessException("Invalid token has been sent", 401)))//401 status require authentication(unauthorized), 403 is invalid authorization (forbidden) or role
+                .map(claims ->
+                        new UsernamePasswordAuthenticationToken(
                                 claims,
                                 null,
                                 Stream.of(claims.get("role"))
@@ -35,5 +37,6 @@ public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
                                         .toList()
                         )
                 );
+
     }
 }

@@ -5,17 +5,19 @@ import co.com.pragma.model.users.Role;
 import co.com.pragma.model.users.User;
 import co.com.pragma.model.users.gateways.LoginRepository;
 import co.com.pragma.model.users.gateways.UsersRepository;
-import co.com.pragma.r2dbc.config.BeansConfig;
 import co.com.pragma.r2dbc.entity.UsersEntity;
-import co.com.pragma.model.users.exception.DataNotFoundException;
+import co.com.pragma.model.users.exception.DynamicBusinessException;
 import co.com.pragma.r2dbc.helper.ReactiveAdapterOperations;
 import org.reactivecommons.utils.ObjectMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 
 import java.math.BigInteger;
+
+import static co.com.pragma.r2dbc.utility.Constants.*;
 
 @Repository
 public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<User, UsersEntity, BigInteger, MyReactiveRepository> implements UsersRepository, LoginRepository {
@@ -34,7 +36,7 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<User,
 
         return existsByEmail(user.getEmail())
                 .filter(Boolean::booleanValue)
-                .switchIfEmpty(Mono.error(new DataNotFoundException("Email already registered")))
+                .switchIfEmpty(Mono.error(new DynamicBusinessException(EMAIL_ALREADY_REGISTERED, HttpStatus.INTERNAL_SERVER_ERROR.value())))
                 .flatMap(isTrue -> {
                     UsersEntity userEntity = toData(user);
                     userEntity.setRole(Role.USER);
@@ -54,21 +56,27 @@ public class MyReactiveRepositoryAdapter extends ReactiveAdapterOperations<User,
     }
 
     public Mono<Boolean> existByDocument(String document) {
-        System.out.println("document "+document);
         return repository.existsByDocument(document)
                 .as(transactionalOperator::transactional)
                 .filter(Boolean::booleanValue)
-                .switchIfEmpty(Mono.error(new DataNotFoundException("Document not found")));
+                .switchIfEmpty(Mono.error(new DynamicBusinessException(DOCUMENT_NUMBER_NOT_FOUND, HttpStatus.NOT_FOUND.value())));
+    }
+
+    @Override
+    public Mono<User> findByDocument(String document) {
+        return repository.findByDocument(document)
+                .as(transactionalOperator::transactional)
+                .map(this::toEntity)
+                .switchIfEmpty(Mono.error(new DynamicBusinessException(DOCUMENT_NUMBER_NOT_FOUND, HttpStatus.NOT_FOUND.value())));
     }
 
     @Override
     public Mono<User> loginUser(Login login) {
-
         return repository.findByEmail(login.getEmail())
                 .as(transactionalOperator::transactional)
                 .map(this::toEntity)
-                .switchIfEmpty(Mono.error(new DataNotFoundException("Email of user not found")))
+                .switchIfEmpty(Mono.error(new DynamicBusinessException(EMAIL_NOT_FOUND, HttpStatus.NOT_FOUND.value())))
                 .filter(user -> passwordEncoder.matches(login.getPassword(), user.getPassword()))
-                .switchIfEmpty(Mono.error(new DataNotFoundException("password is incorrect")));
+                .switchIfEmpty(Mono.error(new DynamicBusinessException(PASSWORD_IS_INCORRECT, HttpStatus.INTERNAL_SERVER_ERROR.value())));
     }
 }

@@ -2,13 +2,12 @@ package co.com.pragma.api.exception;
 
 import co.com.pragma.log.Constants;
 import co.com.pragma.model.users.exception.BusinessException;
-import co.com.pragma.model.users.exception.DataNotFoundException;
+import co.com.pragma.model.users.exception.DynamicBusinessException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler;
 import org.springframework.boot.web.reactive.error.ErrorAttributes;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -44,13 +43,13 @@ public class GlobalExceptionHandle extends AbstractErrorWebExceptionHandler {
                                         .code(Constants.BAD_REQUEST)
                                         .build()));
                     }
-                    if (getError(serverRequest) instanceof DataNotFoundException i) {
-                        return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).
+                    if (getError(serverRequest) instanceof DynamicBusinessException i) {
+                        return ServerResponse.status(i.getCode()).
                                 body(BodyInserters.fromValue(BusinessException.builder()
                                         .message(Arrays.asList(i.getMessage().split(",")))
                                         .path(serverRequest.path())
                                         .localDateTime(LocalDateTime.now())
-                                        .code(Constants.INTERNAL_SERVER_ERROR)
+                                        .code(Constants.FUNCTIONAL_CODE + i.getCode())
                                         .build()));
                     }
                     return Mono.empty();

@@ -45,8 +45,8 @@ public class GlobalExceptionHandle extends AbstractErrorWebExceptionHandler {
                                         .build()));
                     }
                     if (getError(serverRequest) instanceof DataNotFoundException i) {
-                        return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).
-                                body(BodyInserters.fromValue(BusinessException.builder()
+                        return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(BodyInserters.fromValue(BusinessException.builder()
                                         .message(Arrays.asList(i.getMessage().split(",")))
                                         .path(serverRequest.path())
                                         .localDateTime(LocalDateTime.now())

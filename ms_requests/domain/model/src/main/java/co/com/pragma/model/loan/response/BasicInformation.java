@@ -8,6 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 @Builder(toBuilder = true)
-public class UserResponse {
-    private boolean exist;
+public class BasicInformation {
+    private String name;
+    private String email;
 }

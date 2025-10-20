@@ -9,5 +9,5 @@ import lombok.*;
 @Builder(toBuilder = true)
 @ToString
 public class Data {
-    private UserResponse data;
+    private BasicInformation data;
 }

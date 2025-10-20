@@ -1,7 +1,6 @@
 package co.com.pragma.consumer;
 
 
-import co.com.pragma.model.loan.exception.DataNotFoundException;
 import co.com.pragma.model.loan.request.InformationUser;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -13,12 +12,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
-
-import static co.com.pragma.model.loan.exception.Constants.USER_NOT_FOUND;
 
 
 class RestConsumerTest {
@@ -53,11 +49,11 @@ class RestConsumerTest {
         mockBackEnd.enqueue(new MockResponse()
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setResponseCode(HttpStatus.OK.value())
-                .setBody("{\"data\" : {\"exist\":true}}"));
-        var response = restConsumer.consultInformationUser(new InformationUser());
+                .setBody("{\"data\" : {\"name\":\"Gustavo\",\"email\":\"a@a.com\"}}"));
+        var response = restConsumer.consultInformationUser(new InformationUser(),"ABC","USER");
 
         StepVerifier.create(response)
-                .expectNextMatches(objectResponse -> objectResponse.getData().isExist())
+                .expectNextMatches(objectResponse -> !objectResponse.getData().getName().isBlank())
                 .verifyComplete();
     }
 
@@ -69,10 +65,10 @@ class RestConsumerTest {
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setResponseCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .setBody("{\"data\" : {\"exist\":\"true}}"));
-        var response = restConsumer.consultInformationUser(new InformationUser());
+        var response = restConsumer.consultInformationUser(new InformationUser(),"ejb","USER");
 
         StepVerifier.create(response)
-                .expectErrorMatches(e->e.getMessage().equals("authentication microservice dont up"))
+                .expectErrorMatches(e->e.getMessage().equals("Failed to consult information"))
                 //2.expectNextMatches(objectResponse -> objectResponse.equals("ok"))
                 .verify();
     }

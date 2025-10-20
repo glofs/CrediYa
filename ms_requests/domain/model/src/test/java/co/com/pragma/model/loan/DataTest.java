@@ -1,7 +1,7 @@
 package co.com.pragma.model.loan;
 
 import co.com.pragma.model.loan.response.Data;
-import co.com.pragma.model.loan.response.UserResponse;
+import co.com.pragma.model.loan.response.BasicInformation;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -10,13 +10,14 @@ public class DataTest {
 
     @Test
     void shouldSetAndGetUserResponse() {
-        UserResponse userResponse = UserResponse.builder()
-                .exist(true)
+        BasicInformation basicInformation = BasicInformation.builder()
+                .name("Gustavo")
+                .email("jane.doe@gmail.com")
                 .build();
 
-        Data dataWrapper = Data.builder().data(userResponse).build();
+        Data dataWrapper = Data.builder().data(basicInformation).build();
 
         assertNotNull(dataWrapper.getData());
-        assertTrue(dataWrapper.getData().isExist());
+        assertEquals("jane.doe@gmail.com", dataWrapper.getData().getEmail());
     }
 }

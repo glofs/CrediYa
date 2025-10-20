@@ -1,11 +1,12 @@
-package co.com.pragma.model.loan.request;
+package co.com.pragma.api.dto;
 
 import lombok.*;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder(toBuilder = true)
-public class InformationUser {
+public class InformationUserDto {
     private String document;
 }

@@ -8,6 +8,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class UserBoolean {
-    private boolean exist;
+public class UserRole {
+    private String role;
 }

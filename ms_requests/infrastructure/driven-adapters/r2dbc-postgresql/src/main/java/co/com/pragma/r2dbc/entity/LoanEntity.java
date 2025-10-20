@@ -19,6 +19,5 @@ public class LoanEntity {
     private Long amount;
     private String term;
     private String type;
-    @Value(value = "id_state")
-    private String idState;
+    private String state;
 }

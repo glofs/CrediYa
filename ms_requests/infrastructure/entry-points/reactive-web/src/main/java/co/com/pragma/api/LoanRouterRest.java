@@ -25,6 +25,6 @@ public class LoanRouterRest {
 
     public RouterFunction<ServerResponse> routerFunction(LoanHandler loanHandler) {
         return route(POST("/api/v1/user/loan"), loanHandler::generateLoanReq)
-                .and(GET("api/v1/request"),loanHandler::getRequest);
+                .andRoute(GET("api/v1/request"), loanHandler::getRequest);
     }
 }

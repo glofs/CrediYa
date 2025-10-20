@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder(toBuilder = true)
-public class LoanDto {
+public class    LoanDto {
     private Integer id;
     @NotBlank(message = "is required")
     private String document;

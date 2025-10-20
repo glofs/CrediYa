@@ -2,10 +2,12 @@ package co.com.pragma.model.loan.request;
 
 import lombok.*;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder(toBuilder = true)
-public class InformationUser {
-    private String document;
+@ToString
+public class Metadata {
+    private Pagination metadata;
 }

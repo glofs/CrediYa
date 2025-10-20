@@ -5,6 +5,5 @@ import co.com.pragma.model.loan.response.Data;
 import reactor.core.publisher.Mono;
 
 public interface ConsultInformationRepository {
-
-    Mono<Data> consultInformationUser(InformationUser infoUser,String authorization);
+    Mono<Data> consultInformationUser(InformationUser infoUser,String authorization, String spectedRole);
 }

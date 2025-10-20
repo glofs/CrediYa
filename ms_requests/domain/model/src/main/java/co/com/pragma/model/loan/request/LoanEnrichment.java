@@ -2,10 +2,13 @@ package co.com.pragma.model.loan.request;
 
 import lombok.*;
 
-@Data
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder(toBuilder = true)
-public class InformationUser {
-    private String document;
+@Data
+public class LoanEnrichment {
+    private String name;
+    private String email;
+    private LoanModel loanInformation;
 }
